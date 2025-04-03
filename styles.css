@@ -10,3 +10,8 @@ button {
   background-color: rgb(44, 42, 165);
   color: antiquewhite;
 }
+
+button {
+  display: inline;
+  margin: 10px;
+}
