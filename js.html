@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>js para ejecutar</h1>
+    <script>
+      let nombre = "Anna";
+      let nombre1 = "Anna1";
+      let nombre2 = "Anna2";
+
+      const PI = 3.1416;
+
+      function saludar(nombre) {
+        console.log(`Hola,${nombre}`);
+      }
+      saludar(nombre);
+      saludar(nombre1);
+      saludar(nombre2);
+
+      let frase = "JAVASCRIPT es divertido. Estoy aprendiendo Javascript ";
+      frase = frase.toLocaleLowerCase();
+      resultado = frase.includes("javascript");
+      console.log(resultado);
+      console.log("");
+
+      /*Crear un array que contenga nombres de ciudades
+      Imprimir las cuidades que empiezaran por B*/
+
+      const ciudades = [
+        "Barcelona",
+        "Madrid",
+        "Bilbao",
+        "Valencia",
+        "Donosti",
+        "Victoria",
+      ];
+      /*    console.log(ciudades[0], ciudades[2]);
+      console.log(ciudades[0].startsWith("B"));
+      ciudades.forEach((ciudad) => {
+        if (ciudad.startsWith("B")) console.log(ciudad);
+      });
+      //____________
+      const startsWithB = ciudades.filter((ciudad) => {
+        return;
+        ciudad.startsWith("B");
+      });
+      console.log(startsWithB);
+      //____________
+      const mayusculas = ciudades.map((ciudad) => {
+        return ciudad.toUpperCase();
+      });
+      console.log(mayusculas);
+
+      //____________
+      const longitudciudades = ciudades.map((ciudad) => ciudad.length);
+      console.log(longitudciudades);
+
+      //____________
+      const afabetciudades = ciudades.sort();
+      console.log(afabetciudades);
+
+      //____________
+      //let iniciales_str = ciudades.reduce(function (concatenado, ciudad) {
+      // return concatenado + ciudad.charAt(0);
+      // }, "");
+      //console.log(iniciales_str); */
+
+      ciudades.push("Valladolid");
+      console.log("ciudades :>> ", ciudades);
+
+      ciudades.splice(1, 0, "Irun");
+      console.log("ciudades :>> ", ciudades);
+
+      const enlistador = function (nuevo, listado) {
+        nuevo = nuevo.toUpperCase();
+        if (!listado.includes(nuevo)) {
+          listado.push(nuevo);
+        }
+      };
+
+      ciudades.forEach(function (ciudad) {
+        enlistador(ciudad, ciudades);
+      });
+
+      console.log(enlistador("vvv", ciudades));
+    </script>
+  </body>
+</html>
