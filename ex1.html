@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Click Counter</title>
+  </head>
+  <body>
+    <p>Exercicio 1</p>
+    <div><span id="count">0</span></div>
+    <button type="button" onclick="incrementa()">Haz click</button>
+    <button type="button" onclick="reiniciar()">Borrar</button>
+    <script>
+      let counter = 0;
+      const countElement = document.getElementById("count");
+
+      function reiniciar() {
+        countElement.textContent = `Has hecho click 0 veces`;
+        counter = 0;
+      }
+      function incrementa() {
+        countElement.textContent = `Has hecho click ${++counter} veces`;
+      }
+    </script>
+  </body>
+</html>
