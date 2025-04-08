@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora</title>
+  </head>
+  <body>
+    <h2>Ejercicio 3: Calculadora</h2>
+
+    <div>
+      <label for="valor1">Primer número:</label>
+      <input type="number" id="valor1" placeholder="Ingrese número" />
+      <br />
+      <label for="valor2">Segundo número:</label>
+      <input type="number" id="valor2" placeholder="Ingrese número" />
+      <br />
+      <label for="operacion">Operación:</label>
+      <select id="operacion">
+        <option value="sumar">Sumar (+)</option>
+        <option value="restar">Restar (-)</option>
+        <option value="multiple">Multiplicar (×)</option>
+        <option value="dividir">Dividir (÷)</option>
+        <option value="modulo">Módulo (%)</option>
+      </select>
+    </div>
+    <button type="button" onclick="calcular()">Calcular</button>
+    <button type="button" onclick="reset()">Reset</button>
+    <div id="result"></div>
+
+    <script>
+      const calculadora = {
+        sumar: (a, b) => a + b,
+        restar: (a, b) => a - b,
+        multiplicar: (a, b) => a * b,
+        dividir: (a, b) => a / b,
+        modulo: (a, b) => a % b,
+      };
+
+      function reset(params) {
+        result.textContent = "";
+      }
+      function calcular() {
+        const valor1 = parseFloat(document.getElementById("valor1").value);
+        const valor2 = parseFloat(document.getElementById("valor2").value);
+        const operacion = document.getElementById("operacion").value;
+        const result = document.getElementById("result");
+
+        if (isNaN(valor1) || isNaN(valor2)) {
+          result.textContent = "Introduce dos números válidos";
+          return;
+        }
+
+        let operador;
+        let resultado;
+
+        switch (operacion) {
+          case "sumar":
+            operador = "+";
+            resultado = calculadora.sumar(valor1, valor2);
+            break;
+          case "restar":
+            operador = "-";
+            resultado = calculadora.restar(valor1, valor2);
+            break;
+          case "multiple":
+            resultado = calculadora.multiplicar(valor1, valor2);
+            break;
+          case "dividir":
+            if (valor2 === 0) {
+              result.textContent = "No se puede dividir por cero";
+              return;
+            }
+            operador = "÷";
+            resultado = valor1 / valor2;
+            break;
+          case "modulo":
+            operador = "%";
+            resultado = calculadora.modulo(valor1, valor2);
+            break;
+          default:
+            result.textContent = "Operación no válida";
+            return;
+        }
+
+        result.textContent = `${valor1} ${operador} ${valor2} = ${resultado}`;
+      }
+    </script>
+  </body>
+</html>

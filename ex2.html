@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversor de Temperatura</title>
+  </head>
+  <body>
+    <h2>Ejercicio 2: Conversor de Temperatura</h2>
+
+    <div>
+      <label for="temperature">Dame la temperatura un valor numérico:</label>
+      <input
+        type="text"
+        id="temperature"
+        placeholder="Dame un valor numérico"
+      />
+
+      <label for="conversionType">Tipo de conversión:</label>
+      <select id="conversionType">
+        <option value="cToF">Celsius a Fahrenheit</option>
+        <option value="fToC">Fahrenheit a Celsius</option>
+        <option value="cToK">Celsius a Kelvin</option>
+        <option value="kToC">Kelvin a Celsius</option>
+      </select>
+    </div>
+
+    <button type="button" onclick="convertTemperature()">Convertir</button>
+
+    <div id="result"></div>
+
+    <script>
+      function convertTemperature() {
+        const inputTemp = parseFloat(
+          document.getElementById("temperature").value
+        );
+        const conversionType = document.getElementById("conversionType").value;
+
+        if (isNaN(inputTemp)) {
+          document.getElementById("result").textContent =
+            "Por favor introduce un número válido";
+          return;
+        }
+
+        let result;
+        let resultText;
+
+        switch (conversionType) {
+          case "cToF":
+            result = celsiusToFahrenheit(inputTemp);
+            resultText = `${inputTemp}°C = ${result.toFixed(2)}°F`;
+            break;
+          case "fToC":
+            result = fahrenheitToCelsius(inputTemp);
+            resultText = `${inputTemp}°F = ${result.toFixed(2)}°C`;
+            break;
+          case "cToK":
+            result = celsiusToKelvin(inputTemp);
+            resultText = `${inputTemp}°C = ${result.toFixed(2)}K`;
+            break;
+          case "kToC":
+            result = kelvinToCelsius(inputTemp);
+            resultText = `${inputTemp}K = ${result.toFixed(2)}°C`;
+            break;
+          default:
+            resultText = "Tipo de conversión no válido";
+        }
+
+        document.getElementById("result").textContent = resultText;
+      }
+
+      function celsiusToFahrenheit(inputTemp) {
+        return (inputTemp * 9) / 5 + 32;
+      }
+
+      function fahrenheitToCelsius(inputTemp) {
+        return ((inputTemp - 32) * 5) / 9;
+      }
+
+      function celsiusToKelvin(inputTemp) {
+        return inputTemp + 273;
+      }
+
+      function kelvinToCelsius(inputTemp) {
+        return inputTemp - 273;
+      }
+    </script>
+  </body>
+</html>
