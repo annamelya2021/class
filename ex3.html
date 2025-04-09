@@ -35,21 +35,26 @@
         multiplicar: (a, b) => a * b,
         dividir: (a, b) => a / b,
         modulo: (a, b) => a % b,
+        comprobar: function comprobar_numero(num1, num2) {
+          if (isNaN(valor1) || isNaN(valor2)) {
+            result.textContent = "Introduce dos números válidos";
+            return;
+          }
+        },
       };
 
       function reset(params) {
         result.textContent = "";
       }
       function calcular() {
+        // calculadora.comprobar.comprobar_numero(valor1, valor2);
         const valor1 = parseFloat(document.getElementById("valor1").value);
         const valor2 = parseFloat(document.getElementById("valor2").value);
         const operacion = document.getElementById("operacion").value;
         const result = document.getElementById("result");
-
-        if (isNaN(valor1) || isNaN(valor2)) {
-          result.textContent = "Introduce dos números válidos";
-          return;
-        }
+        nuevo_div = document.createElement("div");
+        nuevo_div.textContent = `${valor1} ${operacion} ${valor2} = `;
+        result.appendChild(nuevo_div);
 
         let operador;
         let resultado;

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lista de tareas simples</title>
+  </head>
+  <body>
+    <h1>Lista</h1>
+
+    <input type="text" id="task" placeholder="Tarea..." />
+    <input type="datetime-local" name="" id="momento" />
+    <button id="add">Añadir</button>
+    <h3>Tareas</h3>
+    <ul id="list"></ul>
+
+    <script>
+      const taskInput = document.getElementById("task");
+      const addBtn = document.getElementById("add");
+      const list = document.getElementById("list");
+
+      function addTask() {
+        const taskText = taskInput.value.trim();
+        if (taskText === "") return;
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+                ${taskText}
+                <button class="delete">Borrar</button>
+            `;
+
+        li.querySelector(".delete").addEventListener("click", () => {
+          li.remove();
+        });
+
+        list.appendChild(li);
+        taskInput.value = "";
+      }
+
+      addBtn.addEventListener("click", addTask);
+    </script>
+  </body>
+</html>
