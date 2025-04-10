@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Juego de Adivinanzas</title>
+  </head>
+  <body>
+    <div class="game-container">
+      <h1>Juego de Adivinanzas</h1>
+      <p>Adivina el número entre 1 y 100</p>
+      <label for="numero">Tu intento: </label>
+      <input type="number" id="numero" min="1" max="100" required />
+      <button id="prediccion">Adivinar</button>
+      <button id="reinicio">Reiniciar</button>
+      <div id="mensaje"></div>
+      <div id="intentos">Intentos: 0</div>
+    </div>
+
+    <script>
+      // Variables del juego
+      let numeroMisterioso;
+      let intentos = 0;
+
+      // Elementos del DOM
+      let inputNumero, btnPredecir, btnReinicio, mensajeDiv, intentosDiv;
+
+      try {
+        inputNumero = document.getElementById("numero");
+        btnPredecir = document.getElementById("prediccion");
+        btnReinicio = document.getElementById("reinicio");
+        mensajeDiv = document.getElementById("mensaje");
+        intentosDiv = document.getElementById("intentos");
+
+        if (
+          !inputNumero ||
+          !btnPredecir ||
+          !btnReinicio ||
+          !mensajeDiv ||
+          !intentosDiv
+        ) {
+          throw new Error(
+            "No se encontraron todos los elementos del DOM necesarios"
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Error al acceder a los elementos del DOM:",
+          error.message
+        );
+        alert(
+          "Ocurrió un error al cargar el juego. Por favor, recarga la página."
+        );
+      }
+
+      // Función para generar número aleatorio
+      function generarNumeroAleatorio() {
+        try {
+          return Math.floor(Math.random() * 100) + 1; // 1-100
+        } catch (error) {
+          console.error("Error al generar número aleatorio:", error);
+          return 50; // Valor por defecto si hay error
+        }
+      }
+
+      // Inicializar juego
+      function iniciarJuego() {
+        try {
+          numeroMisterioso = generarNumeroAleatorio();
+          intentos = 0;
+          intentosDiv.textContent = `Intentos: ${intentos}`;
+          mensajeDiv.textContent = "";
+          mensajeDiv.className = "";
+          inputNumero.value = "";
+          inputNumero.focus(); // Ось тут може бути помилка (навмисно залишена для демонстрації)
+          console.log("Número misterioso:", numeroMisterioso);
+        } catch (error) {
+          console.error("Error al iniciar el juego:", error);
+          mensajeDiv.textContent = "Ocurrió un error al iniciar el juego";
+          mensajeDiv.className = "error";
+        }
+      }
+
+      // Función principal del juego
+      function predecir() {
+        try {
+          const numero = parseInt(inputNumero.value);
+
+          // Validación
+          if (isNaN(numero) || numero < 1 || numero > 100) {
+            mensajeDiv.textContent =
+              "Por favor, ingresa un número válido entre 1 y 100";
+            mensajeDiv.className = "error";
+            return;
+          }
+
+          intentos++;
+          intentosDiv.textContent = `Intentos: ${intentos}`;
+
+          if (numero < numeroMisterioso) {
+            mensajeDiv.textContent = "El número es MAYOR";
+            mensajeDiv.className = "error";
+          } else if (numero > numeroMisterioso) {
+            mensajeDiv.textContent = "El número es MENOR";
+            mensajeDiv.className = "error";
+          } else {
+            mensajeDiv.textContent = `¡Felicidades! Adivinaste el número ${numeroMisterioso} en ${intentos} intentos`;
+            mensajeDiv.className = "acierto";
+            btnPredecir.disabled = true;
+          }
+
+          inputNumero.value = "";
+          inputNumero.focus();
+        } catch (error) {
+          console.error("Error en la función predecir:", error);
+          mensajeDiv.textContent = "Ocurrió un error durante el juego";
+          mensajeDiv.className = "error";
+        }
+      }
+
+      // Event Listeners
+      try {
+        btnPredecir.addEventListener("click", predecir);
+        btnReinicio.addEventListener("click", iniciarJuego);
+
+        // Permitir usar Enter para adivinar
+        inputNumero.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            predecir();
+          }
+        });
+
+        // Iniciar el juego al cargar la página
+        iniciarJuego();
+      } catch (error) {
+        console.error("Error al configurar event listeners:", error);
+        alert("Ocurrió un error al configurar el juego");
+      }
+    </script>
+  </body>
+</html>

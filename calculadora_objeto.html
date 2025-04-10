@@ -19,5 +19,74 @@
     <button type="button" onclick="ejecutar()">Ejecutar</button>
     <div id="resultado"></div>
   </body>
-  <script src="./js/dispositivo.js"></script>
+  <script>
+    let calculadora = {
+      sumar: function (a, b) {
+        try {
+          if (!this.comprobar_num(a)) throw new Error("Número 1 inválido");
+          if (!this.comprobar_num(b)) throw new Error("Número 2 inválido");
+          return a + b;
+        } catch (error) {
+          console.error("Error en suma:", error.message);
+          return false;
+        }
+      },
+      // Аналогічно для інших операцій...
+      dividir(a, b) {
+        try {
+          if (!this.comprobar_num(a)) throw new Error("Número 1 inválido");
+          if (!this.comprobar_num(b)) throw new Error("Número 2 inválido");
+          if (b === 0) throw new Error("División por cero");
+          return a / b;
+        } catch (error) {
+          console.error("Error en división:", error.message);
+          window.alert(error.message);
+          return false;
+        }
+      },
+      comprobar_num(num) {
+        if (isNaN(num) || !isFinite(num)) {
+          return false;
+        }
+        return true;
+      },
+    };
+
+    const aniadir_resultado = function (mensaje) {
+      try {
+        let div_resultados = document.getElementById("resultado");
+        if (!div_resultados)
+          throw new Error("Elemento resultado no encontrado");
+
+        let nuevo_div = document.createElement("div");
+        nuevo_div.textContent = mensaje;
+        div_resultados.appendChild(nuevo_div);
+      } catch (error) {
+        console.error("Error al mostrar resultado:", error.message);
+      }
+    };
+
+    const ejecutar = function () {
+      try {
+        let num1 = parseFloat(document.getElementById("num1").value);
+        let num2 = parseFloat(document.getElementById("num2").value);
+        let opcion = document.getElementById("operacion").value;
+
+        if (!calculadora[opcion]) {
+          throw new Error("Operación no válida");
+        }
+
+        let solucion = calculadora[opcion](num1, num2);
+
+        if (solucion !== false) {
+          aniadir_resultado(
+            `Resultado de ${opcion} ${num1} y ${num2} es ${solucion}`
+          );
+        }
+      } catch (error) {
+        console.error("Error en ejecución:", error.message);
+        window.alert("Error: " + error.message);
+      }
+    };
+  </script>
 </html>
