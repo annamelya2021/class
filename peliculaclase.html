@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clase Película</title>
+    <!-- <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+    </style> -->
+  </head>
+  <body>
+    <h1>Ejercicio de Clase Película</h1>
+    <div id="ficha-tecnica"></div>
+
+    <script type="module">
+      class Pelicula {
+        constructor(
+          id,
+          titulo,
+          director,
+          añoEstreno,
+          paises,
+          generos,
+          calificacion
+        ) {
+          this.id = id;
+          this.titulo = Pelicula.validarTitulo(titulo);
+          this.director = Pelicula.validarDirector(director);
+          this.añoEstreno = Pelicula.validarAñoEstreno(añoEstreno);
+          this.paises = Pelicula.validarPaises(paises);
+          this.generos = Pelicula.validarGeneros(generos);
+          this.calificacion = Pelicula.validarCalificacion(calificacion);
+        }
+
+        set id(id) {
+          this._id = Pelicula.validarId(id);
+        }
+
+        get id() {
+          return this._id;
+        }
+
+        static valoresAceptables() {
+          return {
+            paises: [
+              "Argentina",
+              "Brasil",
+              "Chile",
+              "Colombia",
+              "España",
+              "Estados Unidos",
+              "Francia",
+              "Italia",
+              "Japón",
+              "México",
+              "Reino Unido",
+            ],
+            generos: [
+              "Acción",
+              "Aventura",
+              "Animación",
+              "Comedia",
+              "Crimen",
+              "Documental",
+              "Drama",
+              "Fantasía",
+              "Ciencia ficción",
+              "Terror",
+              "Romance",
+              "Suspense",
+            ],
+          };
+        }
+
+        static validarId(id) {
+          const regex = /^[a-zA-Z]{2}\d{7}$/;
+          if (!regex.test(id)) {
+            throw new Error(
+              "El ID de IMDB debe tener 2 letras seguidas de 7 números"
+            );
+          }
+          return id;
+        }
+
+        static validarTitulo(titulo) {
+          if (titulo.length > 100) {
+            throw new Error("El título no puede tener más de 100 caracteres");
+          }
+          return titulo;
+        }
+
+        static validarDirector(director) {
+          if (director.length > 50) {
+            throw new Error("El director no puede tener más de 50 caracteres");
+          }
+          return director;
+        }
+
+        static validarAñoEstreno(anio) {
+          const anioNumero = parseInt(anio);
+          if (isNaN(anioNumero) || anio.toString().length !== 4) {
+            throw new Error(
+              "El año de estreno debe ser un número de 4 dígitos"
+            );
+          }
+          const anioActual = new Date().getFullYear();
+          if (anioNumero < 1888 || anioNumero > anioActual + 5) {
+            throw new Error(`El año debe estar entre 1888 y ${anioActual + 5}`);
+          }
+
+          return anioNumero;
+        }
+
+        static validarPaises(paises) {
+          const aceptables = Pelicula.valoresAceptables().paises;
+          if (!Array.isArray(paises) || paises.length === 0) {
+            throw new Error("Debe especificar al menos un país válido");
+          }
+          for (const pais of paises) {
+            if (!aceptables.includes(pais)) {
+              throw new Error(`País no aceptable: ${pais}`);
+            }
+          }
+          return paises;
+        }
+
+        static validarGeneros(generos) {
+          const aceptables = Pelicula.valoresAceptables().generos;
+          if (!Array.isArray(generos) || generos.length === 0) {
+            throw new Error("Debe especificar al menos un género válido");
+          }
+          for (const genero of generos) {
+            if (!aceptables.includes(genero)) {
+              throw new Error(`Género no aceptable: ${genero}`);
+            }
+          }
+          return generos;
+        }
+
+        static validarCalificacion(calificacion) {
+          if (
+            !Number.isInteger(calificacion) ||
+            calificacion < 0 ||
+            calificacion > 10
+          ) {
+            throw new Error("La calificación debe ser un entero entre 0 y 10");
+          }
+          return calificacion;
+        }
+
+        generarFichaTecnica() {
+          const contenedor = document.getElementById("ficha-tecnica");
+          contenedor.innerHTML = "";
+
+          const tabla = document.createElement("table");
+
+          this.agregarFilaTabla(tabla, "ID IMDB", this.id);
+          this.agregarFilaTabla(tabla, "Título", this.titulo);
+          this.agregarFilaTabla(tabla, "Director", this.director);
+          this.agregarFilaTabla(tabla, "Año de estreno", this.añoEstreno);
+          this.agregarFilaTabla(
+            tabla,
+            "País(es) de origen",
+            this.paises.join(", ")
+          );
+          this.agregarFilaTabla(tabla, "Género(s)", this.generos.join(", "));
+          this.agregarFilaTabla(
+            tabla,
+            "Calificación",
+            `${this.calificacion}/10`
+          );
+
+          contenedor.appendChild(tabla);
+        }
+
+        agregarFilaTabla(tabla, titulo, valor) {
+          const fila = document.createElement("tr");
+
+          const celdaTitulo = document.createElement("th");
+          celdaTitulo.textContent = titulo;
+          fila.appendChild(celdaTitulo);
+
+          const celdaValor = document.createElement("td");
+          celdaValor.textContent = valor;
+          fila.appendChild(celdaValor);
+
+          tabla.appendChild(fila);
+        }
+      }
+
+      try {
+        const pelicula = new Pelicula(
+          "tt1234567",
+          "El Padrino",
+          "Francis Ford Coppola",
+          1972,
+          ["Estados Unidos", "Italia"],
+          ["Drama", "Crimen"],
+          9
+        );
+
+        pelicula.generarFichaTecnica();
+      } catch (error) {
+        console.error("Error:", error.message);
+        document.getElementById(
+          "ficha-tecnica"
+        ).innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+      }
+    </script>
+  </body>
+</html>
