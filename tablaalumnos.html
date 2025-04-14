@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabla de alumnos</title>
+  </head>
+  <body>
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tabla de alumnos</title>
+      </head>
+      <body>
+        <h1>Ejercicio de clases tabla de alumnos</h1>
+        <label for="nombre">Nombre</label>
+        <input
+          type="text"
+          name="nombre"
+          id="nombre"
+          placeholder="Introduzca el nombre"
+          maxlength="20"
+        />
+        <br />
+        <label for="apellido">Apellido</label>
+        <input
+          type="text"
+          name="apellido"
+          id="apellido"
+          placeholder="Introduzca el apellido"
+          maxlength="50"
+        />
+        <br />
+        <label for="dni">DNI</label>
+        <input
+          type="text"
+          name="dni"
+          id="dni"
+          placeholder="Introduzca el numero de DNI"
+        />
+        <br />
+        <label for="edad">edad</label>
+        <input
+          type="number"
+          name="edad"
+          id="edad"
+          placeholder="Introduzca edad"
+          maxlength="3"
+        />
+        <br />
+        <label for="curso">Curso:</label>
+        <select name="curso" id="curso">
+          <option value="curso1">Curso1</option>
+          <option value="curso2">Curso2</option>
+          <option value="curso3">Curso3</option>
+          <option value="curso4">Curso4</option>
+          <option value="curso5">Curso5</option>
+        </select>
+
+        <br />
+        <button type="button" id="alumno_tabla">
+          Añadir los datos de un alumno
+        </button>
+        <button type="button" id="renderizar_tabla">
+          Obtener tabla de datos
+        </button>
+        <hr />
+        <table>
+          <thead>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>DNI</th>
+            <th>Edad</th>
+            <th>Curso</th>
+          </thead>
+          <tbody id="tabla_alumno"></tbody>
+        </table>
+      </body>
+      <script type="module" defer>
+        "use strict";
+
+        let lista_alumnos = JSON.parse(localStorage.getItem("alumnos")) || [];
+
+        function mostrarTodosAlumnos() {
+          const tabla = document.getElementById("tabla_alumno");
+          tabla.innerHTML = "";
+
+          lista_alumnos.forEach((alumno) => {
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+              <td>${alumno.nombre}</td>
+              <td>${alumno.apellido}</td>
+              <td>${alumno.dni}</td>
+              <td>${alumno.edad}</td>
+              <td>${alumno.curso}</td>
+            `;
+            tabla.appendChild(fila);
+          });
+        }
+
+        document.addEventListener("DOMContentLoaded", mostrarTodosAlumnos);
+
+        const cargar_datos = function () {
+          try {
+            let alumno = {
+              nombre: document.getElementById("nombre").value.trim(),
+              apellido: document.getElementById("apellido").value.trim(),
+              dni: verificar_dni(document.getElementById("dni").value.trim()),
+              edad: verificar_edad(
+                document.getElementById("edad").value.trim()
+              ),
+              curso: document.getElementById("curso").value,
+            };
+            if (!alumno.nombre || !alumno.apellido || !alumno.curso) {
+              throw new Error("Todos los campos son obligatorios");
+            }
+
+            lista_alumnos.push(alumno);
+            localStorage.setItem("alumnos", JSON.stringify(lista_alumnos));
+
+            agregarAlumnoATabla(alumno);
+
+            document.getElementById("nombre").value = "";
+            document.getElementById("apellido").value = "";
+            document.getElementById("dni").value = "";
+            document.getElementById("edad").value = "";
+            document.getElementById("curso").selectedIndex = 0;
+          } catch (error) {
+            console.error("Error:", error.message);
+            alert(error.message);
+          }
+        };
+
+        document
+          .getElementById("alumno_tabla")
+          .addEventListener("click", cargar_datos);
+
+        const verificar_edad = function (edad) {
+          edad = parseInt(edad);
+          if (isNaN(edad)) {
+            throw new Error("La edad debe ser un número");
+          }
+          if (edad < 18 || edad > 120) {
+            throw new Error("La edad debe estar entre 18 y 120 años");
+          }
+          return edad;
+        };
+
+        const verificar_dni = function (dni) {
+          dni = dni.toUpperCase();
+          const expresion = /^[A-Z]?\d{7,8}$/;
+          if (!expresion.test(dni)) {
+            throw new Error(
+              "El DNI debe tener 7 u 8 dígitos y puede comenzar con una letra"
+            );
+          }
+          return dni;
+        };
+
+        function agregarAlumnoATabla(alumno) {
+          const tabla = document.getElementById("tabla_alumno");
+          const fila = document.createElement("tr");
+
+          fila.innerHTML = `
+            <td>${alumno.nombre}</td>
+            <td>${alumno.apellido}</td>
+            <td>${alumno.dni}</td>
+            <td>${alumno.edad}</td>
+            <td>${alumno.curso}</td>
+          `;
+
+          tabla.appendChild(fila);
+        }
+      </script>
+    </html>
+  </body>
+</html>
