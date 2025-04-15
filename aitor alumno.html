@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alumnos</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Formulario escuela</h1>
+    <label for="nombre">Nombre: </label>
+    <input type="text" name="nombre" id="nombre" />
+    <label for="apellidos">Apellidos: </label>
+    <input type="text" name="apellidos" id="apellidos" />
+    <br /><label for="dni">DNI: </label>
+    <input type="text" name="dni" id="dni" />
+    <label for="edad">Edad</label>
+    <input type="number" name="edad" id="edad" />
+    <br /><label for="curso">Curso: </label>
+    <select name="curso" id="curso">
+      <option value="curso1">Curso1</option>
+      <option value="curso2">Curso2</option>
+      <option value="curso3">Curso3</option>
+      <option value="curso4">Curso4</option>
+      <option value="curso5">Curso5</option>
+    </select>
+    <button type="button" id="carga_datos">Aceptar</button>
+    <button type="button" id="renderiza_tabla">Obtener tabla de datos</button>
+    <table id="tabla_alumnos"></table>
+
+    <script>
+      let lista_alumnos =
+        JSON.parse(localStorage.getItem("lista_alumnos")) || [];
+
+      const verifica_edad = function (edad) {
+        edad = parseInt(edad);
+        if (edad >= 18 && edad <= 120) {
+          return edad;
+        } else {
+          throw new Error("La edad está fuera del rango (18-120)");
+        }
+      };
+
+      const verifica_dni = function (dni) {
+        dni = dni.toUpperCase();
+        const expresion = /^\d{8}[A-Z]$/;
+        if (expresion.test(dni)) {
+          return dni;
+        } else {
+          throw new Error("El DNI no es correcto (8 dígitos + letra)");
+        }
+      };
+
+      const cargar_datos = function () {
+        let alumno = {
+          nombre: document.getElementById("nombre").value.trim(),
+          apellidos: document.getElementById("apellidos").value.trim(),
+        };
+
+        try {
+          alumno.dni = verifica_dni(document.getElementById("dni").value);
+          alumno.edad = verifica_edad(document.getElementById("edad").value);
+          alumno.curso = document.getElementById("curso").value;
+
+          lista_alumnos.push(alumno);
+          localStorage.setItem("lista_alumnos", JSON.stringify(lista_alumnos));
+
+          // Limpiar formulario
+          document.getElementById("nombre").value = "";
+          document.getElementById("apellidos").value = "";
+          document.getElementById("dni").value = "";
+          document.getElementById("edad").value = "";
+
+          alert("Alumno registrado correctamente");
+        } catch (error) {
+          alert(error.message);
+          console.error(error);
+        }
+      };
+
+      const renderizar_tabla = function () {
+        const tabla = document.getElementById("tabla_alumnos");
+        tabla.innerHTML = ""; // Limpiar tabla
+
+        if (lista_alumnos.length === 0) {
+          tabla.innerHTML =
+            "<tr><td colspan='5'>No hay alumnos registrados</td></tr>";
+          return;
+        }
+
+        // Crear encabezados
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+
+        // Usar las claves del primer alumno para los encabezados
+        Object.keys(lista_alumnos[0]).forEach((key) => {
+          const th = document.createElement("th");
+          th.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+          headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        tabla.appendChild(thead);
+
+        // Crear cuerpo de la tabla
+        const tbody = document.createElement("tbody");
+
+        lista_alumnos.forEach((alumno) => {
+          const row = document.createElement("tr");
+
+          Object.values(alumno).forEach((value) => {
+            const td = document.createElement("td");
+            td.textContent = value;
+            row.appendChild(td);
+          });
+
+          tbody.appendChild(row);
+        });
+
+        tabla.appendChild(tbody);
+      };
+
+      // Asignar eventos
+      document
+        .getElementById("carga_datos")
+        .addEventListener("click", cargar_datos);
+      document
+        .getElementById("renderiza_tabla")
+        .addEventListener("click", renderizar_tabla);
+    </script>
+  </body>
+</html>

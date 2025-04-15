@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alumnos</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      button {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Formulario escuela</h1>
+    <h2 id="resumen"></h2>
+    <div>
+      <label for="nombre">Nombre: </label>
+      <input type="text" id="nombre" />
+    </div>
+    <div>
+      <label for="apellidos">Apellidos: </label>
+      <input type="text" id="apellidos" />
+    </div>
+    <div>
+      <label for="dni">DNI: </label>
+      <input type="text" id="dni" />
+    </div>
+    <div>
+      <label for="edad">Edad: </label>
+      <input type="number" id="edad" />
+    </div>
+    <div>
+      <label for="curso">Curso: </label>
+      <select id="curso"></select>
+    </div>
+    <button id="carga_datos">Aceptar</button>
+    <button id="renderiza_tabla">Mostrar tabla</button>
+    <table id="tabla_alumnos"></table>
+
+    <script>
+      class Alumno {
+        static cursos = ["Curso1", "Curso2", "Curso3", "Curso4", "Curso5"];
+
+        static renderCursos() {
+          const select = document.getElementById("curso");
+          select.innerHTML = "";
+          this.cursos.forEach((curso) => {
+            const option = document.createElement("option");
+            option.value = curso;
+            option.textContent = curso;
+            select.appendChild(option);
+          });
+        }
+
+        static renderTable(alumnos) {
+          const tabla = document.getElementById("tabla_alumnos");
+          tabla.innerHTML = "";
+
+          if (alumnos.length === 0) {
+            tabla.innerHTML = '<tr><td colspan="6">No hay alumnos</td></tr>';
+            return;
+          }
+
+          // Encabezado
+          const thead = document.createElement("thead");
+          const headerRow = document.createElement("tr");
+          [
+            "Nombre",
+            "Apellidos",
+            "DNI",
+            "Edad",
+            "Curso",
+            "Resumen",
+            "Acción",
+          ].forEach((text) => {
+            const th = document.createElement("th");
+            th.textContent = text;
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+          tabla.appendChild(thead);
+
+          // Cuerpo
+          const tbody = document.createElement("tbody");
+          alumnos.forEach((alumno, index) => {
+            const row = document.createElement("tr");
+
+            ["nombre", "apellidos", "dni", "edad", "curso"].forEach((prop) => {
+              const td = document.createElement("td");
+              td.textContent = alumno[prop];
+              row.appendChild(td);
+            });
+
+            // Botón de eliminar
+            const tdAction = document.createElement("td");
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Eliminar";
+            const tdResumen = document.createElement("td");
+            const resumenBtn = document.createElement("button");
+            resumenBtn.textContent = "Resumen";
+
+            deleteBtn.onclick = () => {
+              alumnos.splice(index, 1);
+              localStorage.setItem("alumnos", JSON.stringify(alumnos));
+              this.renderTable(alumnos);
+            };
+            tdAction.appendChild(deleteBtn);
+            row.appendChild(tdAction);
+
+            resumenBtn.onclick = () => {
+              const resumen = `Alumno ${alumno.nombre} ${alumno.apellidos} con DNI: ${alumno.dni} tiene ${alumno.edad} anos y estudia ${alumno.curso}`;
+              const h2Resumen = document.getElementById("resumen");
+              h2Resumen.textContent = resumen;
+            };
+
+            tdResumen.appendChild(resumenBtn);
+            row.appendChild(tdResumen);
+
+            tbody.appendChild(row);
+          });
+          tabla.appendChild(tbody);
+        }
+
+        constructor(nombre, apellidos, dni, edad, curso) {
+          this.nombre = nombre;
+          this.apellidos = apellidos;
+          this.dni = dni;
+          this.edad = edad;
+          this.curso = curso;
+        }
+      }
+
+      // Inicialización
+      let alumnos = JSON.parse(localStorage.getItem("alumnos")) || [];
+      Alumno.renderCursos();
+
+      // Eventos
+      document.getElementById("carga_datos").addEventListener("click", () => {
+        const alumno = new Alumno(
+          document.getElementById("nombre").value,
+          document.getElementById("apellidos").value,
+          document.getElementById("dni").value,
+          document.getElementById("edad").value,
+          document.getElementById("curso").value
+        );
+
+        alumnos.push(alumno);
+        localStorage.setItem("alumnos", JSON.stringify(alumnos));
+
+        // Limpiar formulario
+        document.getElementById("nombre").value = "";
+        document.getElementById("apellidos").value = "";
+        document.getElementById("dni").value = "";
+        document.getElementById("edad").value = "";
+      });
+
+      document
+        .getElementById("renderiza_tabla")
+        .addEventListener("click", () => {
+          Alumno.renderTable(alumnos);
+        });
+    </script>
+  </body>
+</html>

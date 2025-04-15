@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -63,10 +63,9 @@
         <button type="button" id="alumno_tabla">
           Añadir los datos de un alumno
         </button>
-        <button type="button" id="renderizar_tabla">
-          Obtener tabla de datos
-        </button>
+       
         <hr />
+        <h2>Lista de alumnos</h2>
         <table>
           <thead>
             <th>Nombre</th>
@@ -175,5 +174,181 @@
         }
       </script>
     </html>
+  </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alumnos</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Formulario escuela</h1>
+    <div>
+      <label for="nombre">Nombre: </label>
+      <input type="text" name="nombre" id="nombre" />
+    </div>
+    <div>
+      <label for="apellidos">Apellidos: </label>
+      <input type="text" name="apellidos" id="apellidos" />
+    </div>
+    <div>
+      <label for="dni">DNI: </label>
+      <input type="text" name="dni" id="dni" />
+    </div>
+    <div>
+      <label for="edad">Edad: </label>
+      <input type="number" name="edad" id="edad" />
+    </div>
+    <div>
+      <label for="curso">Curso: </label>
+      <select name="curso" id="curso">
+        <option value="curso1">Curso 1</option>
+        <option value="curso2">Curso 2</option>
+        <option value="curso3">Curso 3</option>
+        <option value="curso4">Curso 4</option>
+        <option value="curso5">Curso 5</option>
+      </select>
+    </div>
+    <div>
+      <button type="button" id="carga_datos">Aceptar</button>
+      <button type="button" id="renderiza_tabla">Mostrar tabla</button>
+    </div>
+    <table id="tabla_alumnos"></table>
+
+    <script>
+      // Очікуємо завантаження DOM перед виконанням коду
+      document.addEventListener("DOMContentLoaded", function () {
+        let lista_alumnos =
+          JSON.parse(localStorage.getItem("lista_alumnos")) || [];
+
+        const verifica_edad = function (edad) {
+          edad = parseInt(edad);
+          if (isNaN(edad) || edad < 18 || edad > 120) {
+            throw new Error("La edad debe estar entre 18 y 120 años");
+          }
+          return edad;
+        };
+
+        const verifica_dni = function (dni) {
+          dni = dni.trim().toUpperCase();
+          const expresion = /^[0-9]{8}[A-Z]$/;
+          if (!expresion.test(dni)) {
+            throw new Error(
+              "DNI debe tener 8 dígitos y una letra (ej. 12345678X)"
+            );
+          }
+          return dni;
+        };
+
+        const cargar_datos = function () {
+          const nombre = document.getElementById("nombre").value.trim();
+          const apellidos = document.getElementById("apellidos").value.trim();
+          const dni = document.getElementById("dni").value.trim();
+          const edad = document.getElementById("edad").value.trim();
+          const curso = document.getElementById("curso").value;
+
+          if (!nombre || !apellidos || !dni || !edad) {
+            alert("Por favor, complete todos los campos");
+            return;
+          }
+
+          try {
+            const alumno = {
+              nombre: nombre,
+              apellidos: apellidos,
+              dni: verifica_dni(dni),
+              edad: verifica_edad(edad),
+              curso: curso,
+            };
+
+            lista_alumnos.push(alumno);
+            localStorage.setItem(
+              "lista_alumnos",
+              JSON.stringify(lista_alumnos)
+            );
+
+            // Limpiar formulario
+            document.getElementById("nombre").value = "";
+            document.getElementById("apellidos").value = "";
+            document.getElementById("dni").value = "";
+            document.getElementById("edad").value = "";
+            document.getElementById("curso").value = "curso1";
+
+            alert("Alumno registrado correctamente");
+          } catch (error) {
+            alert(error.message);
+            console.error(error);
+          }
+        };
+
+        const renderizar_tabla = function () {
+          const tabla = document.getElementById("tabla_alumnos");
+          tabla.innerHTML = "";
+
+          if (lista_alumnos.length === 0) {
+            tabla.innerHTML =
+              "<tr><td colspan='5'>No hay alumnos registrados</td></tr>";
+            return;
+          }
+
+          // Crear encabezado
+          const encabezado = document.createElement("thead");
+          const filaEncabezado = document.createElement("tr");
+
+          Object.keys(lista_alumnos[0]).forEach((key) => {
+            const th = document.createElement("th");
+            th.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+            filaEncabezado.appendChild(th);
+          });
+
+          encabezado.appendChild(filaEncabezado);
+          tabla.appendChild(encabezado);
+
+          // Crear cuerpo
+          const cuerpo = document.createElement("tbody");
+          lista_alumnos.forEach((alumno) => {
+            const fila = document.createElement("tr");
+            Object.values(alumno).forEach((valor) => {
+              const td = document.createElement("td");
+              td.textContent = valor;
+              fila.appendChild(td);
+            });
+            cuerpo.appendChild(fila);
+          });
+          tabla.appendChild(cuerpo);
+        };
+
+        // Asignar event listeners
+        document
+          .getElementById("carga_datos")
+          .addEventListener("click", cargar_datos);
+        document
+          .getElementById("renderiza_tabla")
+          .addEventListener("click", renderizar_tabla);
+
+        // Mostrar tabla al cargar la página si hay datos
+        if (lista_alumnos.length > 0) {
+          renderizar_tabla();
+        }
+      });
+    </script>
   </body>
 </html>
