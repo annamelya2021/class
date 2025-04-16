@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AEMET Estaciones Meteorológicas</title>
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .control-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fdecea;
+            border-radius: 4px;
+            display: none;
+            margin-bottom: 20px;
+        }
+        .results-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .estacion {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        .estacion h3 {
+            margin-top: 0;
+            color: #2980b9;
+        }
+        .estacion p {
+            margin: 5px 0;
+        }
+        .map-view {
+            height: 400px;
+            background-color: #e9e9e9;
+            display: none;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .table-view {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+        }
+        .table-view th, .table-view td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .table-view th {
+            background-color: #3498db;
+            color: white;
+        }
+        .table-view tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .view-controls {
+            margin-bottom: 15px;
+        }
+        .view-btn {
+            padding: 8px 15px;
+            margin-right: 5px;
+            width: auto;
+            background-color: #95a5a6;
+        }
+        .view-btn.active {
+            background-color: #3498db;
+        }
+    </style> -->
+  </head>
+  <body>
+    <h1>AEMET - Datos Meteorológicos</h1>
+
+    <div class="control-panel">
+      <div class="form-group">
+        <label for="request-type">Tipo de Consulta:</label>
+        <select id="request-type">
+          <option value="estaciones">Listado de Estaciones</option>
+          <option value="observacion">Datos de Observación</option>
+          <option value="prediccion">Predicción para Municipio</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="municipio-group" style="display: none">
+        <label for="municipio">Código Municipio (Ej: 28079):</label>
+        <input
+          type="text"
+          id="municipio"
+          placeholder="Introduce el código de municipio"
+        />
+      </div>
+
+      <div class="form-group" id="estacion-group" style="display: none">
+        <label for="estacion">ID de Estación (Ej: 3195):</label>
+        <input
+          type="text"
+          id="estacion"
+          placeholder="Introduce el ID de estación"
+        />
+      </div>
+
+      <button id="consultar-btn">Consultar</button>
+      <button id="limpiar-btn">Limpiar Resultados</button>
+    </div>
+
+    <div id="error-message" class="error"></div>
+    <div id="loading">
+      <p>Cargando datos...</p>
+    </div>
+
+    <div class="view-controls">
+      <button class="view-btn" data-view="cards">Vista</button>
+    </div>
+
+    <div class="results-container">
+      <div id="cards-view">
+        <div id="estaciones-container"></div>
+      </div>
+
+      <div id="table-view" class="table-view"></div>
+      <div id="map-view" class="map-view"></div>
+    </div>
+
+    <script>
+      const apiKey =
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbm5hLmJhc3l1a0BnbWFpbC5jb20iLCJqdGkiOiI1ODUxMTZhYi1lZWVlLTQ2NTctYjg0MS0xYWU3YTFlNjEwMDYiLCJpc3MiOiJBRU1FVCIsImlhdCI6MTc0NDc4NjI5NSwidXNlcklkIjoiNTg1MTE2YWItZWVlZS00NjU3LWI4NDEtMWFlN2ExZTYxMDA2Iiwicm9sZSI6IiJ9.OxbjLS4txIq6q51moGE9mJSu9ftNUf8RT8rR-TZ6XPI";
+
+      // Elementos del DOM
+      const requestTypeSelect = document.getElementById("request-type");
+      const municipioGroup = document.getElementById("municipio-group");
+      const estacionGroup = document.getElementById("estacion-group");
+      const consultarBtn = document.getElementById("consultar-btn");
+      const limpiarBtn = document.getElementById("limpiar-btn");
+      const errorElement = document.getElementById("error-message");
+      const loadingElement = document.getElementById("loading");
+      const estacionesContainer = document.getElementById(
+        "estaciones-container"
+      );
+      const tableView = document.getElementById("table-view");
+      const mapView = document.getElementById("map-view");
+      const cardsView = document.getElementById("cards-view");
+      const viewButtons = document.querySelectorAll(".view-btn");
+
+      // URLs base para diferentes tipos de consulta
+      const apiEndpoints = {
+        estaciones:
+          "https://opendata.aemet.es/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones/",
+        observacion:
+          "https://opendata.aemet.es/opendata/api/observacion/convencional/datos/estacion/",
+        prediccion:
+          "https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/",
+      };
+
+      // Manejadores de eventos
+      requestTypeSelect.addEventListener("change", toggleInputFields);
+      consultarBtn.addEventListener("click", realizarConsulta);
+      limpiarBtn.addEventListener("click", limpiarResultados);
+      viewButtons.forEach((btn) => {
+        btn.addEventListener("click", changeView);
+      });
+
+      // Mostrar/ocultar campos según el tipo de consulta
+      function toggleInputFields() {
+        const selectedType = requestTypeSelect.value;
+
+        municipioGroup.style.display = "none";
+        estacionGroup.style.display = "none";
+
+        if (selectedType === "prediccion") {
+          municipioGroup.style.display = "block";
+        } else if (selectedType === "observacion") {
+          estacionGroup.style.display = "block";
+        }
+      }
+
+      // Realizar la consulta a la API
+      function realizarConsulta() {
+        const selectedType = requestTypeSelect.value;
+        let url = apiEndpoints[selectedType];
+        let params = `?api_key=${apiKey}`;
+
+        // Construir la URL según el tipo de consulta
+        if (selectedType === "prediccion") {
+          const municipio = document.getElementById("municipio").value;
+          if (!municipio) {
+            showError("Por favor, introduce un código de municipio");
+            return;
+          }
+          params += `&id=${municipio}`;
+        } else if (selectedType === "observacion") {
+          const estacion = document.getElementById("estacion").value;
+          if (!estacion) {
+            showError("Por favor, introduce un ID de estación");
+            return;
+          }
+          url += estacion;
+        }
+
+        // Limpiar resultados anteriores y mostrar carga
+        limpiarResultados();
+        loadingElement.style.display = "block";
+        errorElement.style.display = "none";
+
+        // Realizar la petición
+        fetch(url + params)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `Error ${response.status}: ${response.statusText}`
+              );
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Respuesta inicial:", data);
+
+            if (!data.datos) {
+              throw new Error("No se encontró la URL de datos en la respuesta");
+            }
+
+            // Segunda petición para obtener los datos reales
+            return fetch(data.datos);
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Datos recibidos:", data);
+            mostrarResultados(data, selectedType);
+          })
+          .catch((error) => {
+            console.error("Error en la petición:", error);
+            showError(error.message);
+          })
+          .finally(() => {
+            loadingElement.style.display = "none";
+          });
+      }
+
+      // Mostrar resultados según el tipo de consulta
+      function mostrarResultados(data, type) {
+        // Mostrar vista de tarjetas por defecto
+        changeView({ target: document.querySelector('[data-view="cards"]') });
+
+        if (type === "estaciones") {
+          mostrarEstaciones(data);
+        } else if (type === "observacion") {
+          mostrarObservaciones(data);
+        } else if (type === "prediccion") {
+          mostrarPrediccion(data);
+        }
+      }
+
+      // Mostrar listado de estaciones
+      function mostrarEstaciones(estaciones) {
+        if (!estaciones || estaciones.length === 0) {
+          showError("No se encontraron estaciones");
+          return;
+        }
+
+        // Limitar a 50 estaciones para mejor rendimiento
+        const estacionesMostrar = estaciones.slice(0, 50);
+
+        // Vista de tarjetas
+        estacionesContainer.innerHTML = "";
+        estacionesMostrar.forEach((estacion) => {
+          const estacionElement = document.createElement("div");
+          estacionElement.className = "estacion";
+
+          estacionElement.innerHTML = `
+                    <h3>${estacion.nombre || "Nombre no disponible"}</h3>
+                    <p><strong>ID:</strong> ${estacion.idema || "N/A"}</p>
+                    <p><strong>Provincia:</strong> ${
+                      estacion.provincia || "N/A"
+                    }</p>
+                    <p><strong>Altitud:</strong> ${
+                      estacion.altitud ? estacion.altitud + " m" : "N/A"
+                    }</p>
+                    <p><strong>Latitud:</strong> ${
+                      estacion.latitud || "N/A"
+                    }</p>
+                    <p><strong>Longitud:</strong> ${
+                      estacion.longitud || "N/A"
+                    }</p>
+                `;
+
+          estacionesContainer.appendChild(estacionElement);
+        });
+
+        // Vista de tabla
+        let tableHTML = `
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>ID</th>
+                        <th>Provincia</th>
+                        <th>Altitud</th>
+                        <th>Latitud</th>
+                        <th>Longitud</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+        estacionesMostrar.forEach((estacion) => {
+          tableHTML += `
+                    <tr>
+                        <td>${estacion.nombre || "N/A"}</td>
+                        <td>${estacion.idema || "N/A"}</td>
+                        <td>${estacion.provincia || "N/A"}</td>
+                        <td>${estacion.altitud || "N/A"}</td>
+                        <td>${estacion.latitud || "N/A"}</td>
+                        <td>${estacion.longitud || "N/A"}</td>
+                    </tr>
+                `;
+        });
+
+        tableHTML += "</tbody>";
+        tableView.innerHTML = tableHTML;
+
+        // Vista de mapa (simulada)
+        mapView.innerHTML =
+          '<p style="text-align:center;padding-top:180px;">Visualización del mapa con ubicaciones de estaciones</p>';
+
+        if (estaciones.length > 50) {
+          const mensaje = document.createElement("p");
+          mensaje.textContent = `Mostrando 50 de ${estaciones.length} estaciones.`;
+          estacionesContainer.appendChild(mensaje);
+          tableView.insertAdjacentHTML(
+            "afterend",
+            `<p>Mostrando 50 de ${estaciones.length} estaciones.</p>`
+          );
+        }
+      }
+
+      // Mostrar datos de observación
+      function mostrarObservaciones(observaciones) {
+        if (!observaciones || observaciones.length === 0) {
+          showError("No se encontraron datos de observación");
+          return;
+        }
+
+        // Tomar la última observación
+        const ultimaObs = observaciones[observaciones.length - 1];
+
+        // Vista de tarjetas
+        estacionesContainer.innerHTML = `
+                <div class="estacion">
+                    <h3>Estación: ${ultimaObs.idema || "N/A"}</h3>
+                    <p><strong>Fecha:</strong> ${ultimaObs.fint || "N/A"}</p>
+                    <p><strong>Temperatura:</strong> ${
+                      ultimaObs.ta || "N/A"
+                    } °C</p>
+                    <p><strong>Humedad:</strong> ${ultimaObs.hr || "N/A"} %</p>
+                    <p><strong>Presión:</strong> ${
+                      ultimaObs.pres || "N/A"
+                    } hPa</p>
+                    <p><strong>Velocidad Viento:</strong> ${
+                      ultimaObs.vv || "N/A"
+                    } km/h</p>
+                    <p><strong>Dirección Viento:</strong> ${
+                      ultimaObs.dv || "N/A"
+                    } grados</p>
+                </div>
+            `;
+
+        // Vista de tabla
+        let tableHTML = `
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Temperatura (°C)</th>
+                        <th>Humedad (%)</th>
+                        <th>Presión (hPa)</th>
+                        <th>Viento (km/h)</th>
+                        <th>Dirección</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+        // Mostrar solo las últimas 10 observaciones
+        const obsMostrar = observaciones.slice(-10);
+
+        obsMostrar.forEach((obs) => {
+          tableHTML += `
+                    <tr>
+                        <td>${obs.fint || "N/A"}</td>
+                        <td>${obs.ta || "N/A"}</td>
+                        <td>${obs.hr || "N/A"}</td>
+                        <td>${obs.pres || "N/A"}</td>
+                        <td>${obs.vv || "N/A"}</td>
+                        <td>${obs.dv || "N/A"}</td>
+                    </tr>
+                `;
+        });
+
+        tableHTML += "</tbody>";
+        tableView.innerHTML = tableHTML;
+
+        // Vista de mapa (simulada)
+        mapView.innerHTML =
+          '<p style="text-align:center;padding-top:180px;">Visualización del mapa con datos meteorológicos actuales</p>';
+      }
+
+      // Mostrar datos de predicción
+      function mostrarPrediccion(prediccion) {
+        if (!prediccion || !prediccion[0] || !prediccion[0].prediccion) {
+          showError("No se encontraron datos de predicción");
+          return;
+        }
+
+        const dia = prediccion[0].prediccion.dia[0];
+
+        // Vista de tarjetas
+        estacionesContainer.innerHTML = `
+                <div class="estacion">
+                    <h3>Predicción para ${prediccion[0].nombre || "N/A"}</h3>
+                    <p><strong>Fecha:</strong> ${dia.fecha || "N/A"}</p>
+                    <p><strong>Temperatura máxima:</strong> ${
+                      dia.temperatura.maxima || "N/A"
+                    } °C</p>
+                    <p><strong>Temperatura mínima:</strong> ${
+                      dia.temperatura.minima || "N/A"
+                    } °C</p>
+                    <p><strong>Estado cielo:</strong> ${
+                      dia.estadoCielo[0].descripcion || "N/A"
+                    }</p>
+                    <p><strong>Probabilidad precipitación:</strong> ${
+                      dia.probPrecipitacion[0].value || "0"
+                    } %</p>
+                    <p><strong>Viento:</strong> ${
+                      dia.viento[0].velocidad || "N/A"
+                    } km/h, dirección ${dia.viento[0].direccion || "N/A"}</p>
+                </div>
+            `;
+
+        // Vista de tabla
+        let tableHTML = `
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Temp. Máx (°C)</th>
+                        <th>Temp. Mín (°C)</th>
+                        <th>Estado Cielo</th>
+                        <th>Lluvia (%)</th>
+                        <th>Viento (km/h)</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+        // Mostrar predicción para los próximos 3 días
+        const diasMostrar = prediccion[0].prediccion.dia.slice(0, 3);
+
+        diasMostrar.forEach((dia) => {
+          tableHTML += `
+                    <tr>
+                        <td>${dia.fecha || "N/A"}</td>
+                        <td>${dia.temperatura.maxima || "N/A"}</td>
+                        <td>${dia.temperatura.minima || "N/A"}</td>
+                        <td>${dia.estadoCielo[0].descripcion || "N/A"}</td>
+                        <td>${dia.probPrecipitacion[0]?.value || "0"}</td>
+                        <td>${dia.viento[0].velocidad || "N/A"} (${
+            dia.viento[0].direccion || "N/A"
+          })</td>
+                    </tr>
+                `;
+        });
+
+        tableHTML += "</tbody>";
+        tableView.innerHTML = tableHTML;
+
+        // Vista de mapa (simulada)
+        mapView.innerHTML =
+          '<p style="text-align:center;padding-top:180px;">Visualización del mapa con predicción meteorológica</p>';
+      }
+
+      // Cambiar entre vistas (tarjetas, tabla, mapa)
+      function changeView(event) {
+        const view = event.target.dataset.view;
+
+        // Actualizar botones activos
+        viewButtons.forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        // Mostrar/ocultar vistas
+        cardsView.style.display = "none";
+        tableView.style.display = "none";
+        mapView.style.display = "none";
+
+        if (view === "cards") {
+          cardsView.style.display = "block";
+        } else if (view === "table") {
+          tableView.style.display = "table";
+        } else if (view === "map") {
+          mapView.style.display = "block";
+        }
+      }
+
+      // Mostrar mensaje de error
+      function showError(message) {
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+      }
+
+      // Limpiar resultados
+      function limpiarResultados() {
+        estacionesContainer.innerHTML = "";
+        tableView.innerHTML = "";
+        mapView.innerHTML = "";
+        errorElement.style.display = "none";
+      }
+
+      // Inicializar vista por defecto
+      toggleInputFields();
+    </script>
+  </body>
+</html>
