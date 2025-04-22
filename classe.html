@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Listado Tareas</title>
+    <style></style>
   </head>
   <body>
     <h1>Listado tareas</h1>
@@ -14,6 +15,12 @@
       placeholder="Introduce nueva tarea"
     />
     <input type="datetime-local" id="momento" />
+    <select name="importancia" id="importancia" placeholder="Importancia">
+      <option value="baja" selected disabled>Importancia</option>
+      <option value="baja">Baja</option>
+      <option value="media">Media</option>
+      <option value="alta">Alta</option>
+    </select>
     <button type="button" id="aniadir_tarea">Añadir</button>
     <h3>Tareas</h3>
     <table>
@@ -21,6 +28,7 @@
         <tr>
           <th scope="col">Fecha</th>
           <th scope="col">Tarea</th>
+          <th scope="col">Importancia</th>
           <th scope="col">Borrar</th>
         </tr>
       </thead>
@@ -30,19 +38,21 @@
   <script>
     let tareas = [];
     class Tarea {
-      constructor(fecha, texto) {
+      constructor(fecha, texto, importancia) {
         console.log(fecha.valueOf());
         if (!fecha.valueOf()) {
           fecha = new Date();
         }
         this.fecha = fecha;
         this.texto = texto;
+        this.importancia = importancia;
       }
 
       creaFila(indice) {
         let filaTarea = document.createElement("tr");
         filaTarea.innerHTML = `<th scope="row">${this.fecha.toLocaleString()}</th>
           <td>${this.texto}</td>
+          <td>${this.importancia}</td>
           <td class="boton_borrar"></td>`;
         let itemBoton = document.createElement("button");
         itemBoton.innerText = "Borrar";
@@ -90,10 +100,16 @@
     const aniadirTarea = function () {
       let input_tarea = document.getElementById("tarea_nueva");
       let input_momento = document.getElementById("momento");
+      let selected_importancia = document.getElementById("importancia");
+
       //let tareaNueva = {};
       //tareaNueva.texto = input_tarea.value;
       //tareaNueva.fecha = new Date(input_momento.value);
-      tareaNueva = new Tarea(new Date(input_momento.value), input_tarea.value);
+      tareaNueva = new Tarea(
+        new Date(input_momento.value),
+        input_tarea.value,
+        selected_importancia.value
+      );
 
       console.log(tareaNueva);
       if (tareaNueva.texto === "") {
@@ -101,6 +117,7 @@
       } else {
         input_tarea.value = "";
         input_momento.value = "";
+        selected_importancia.value = "";
         tareas.unshift(tareaNueva);
         console.log(tareas);
         renderizarListado();
